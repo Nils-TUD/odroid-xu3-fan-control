@@ -31,13 +31,13 @@ TEST_EVERY=3 #seconds
 
 # Make sure after quiting script fan goes to auto control
 function cleanup {
-  $DEBUG && echo "event: quit; temp: auto" >&2
+  $DEBUG && echo "Fan control stopped (back to auto)." >&2
   echo 1 > $FAN_MODE_FILE
 }
 trap cleanup EXIT
 
 function exit_xu3_only_supported {
-  $DEBUG && echo "event: non-xu3 $1" >&2
+  $DEBUG && echo "Found non-xu3: $1" >&2
   exit 2
 }
 if [ ! -f $TEMPERATURE_FILE ]; then
@@ -48,8 +48,7 @@ elif [ ! -f $FAN_SPEED_FILE ]; then
   exit_xu3_only_supported "no fan speed file"
 fi
 
-current_max_temp=`cat ${TEMPERATURE_FILE} | cut -d: -f2 | sort -nr | head -1`
-echo "fan control started. Current max temp: ${current_max_temp}"
+echo "Fan control started." >&2
 
 prev_fan_speed=0
 # To be sure we can manage fan
@@ -84,8 +83,8 @@ do
   fi
 
   if [ $prev_fan_speed -ne $new_fan_speed ]; then
-    $DEBUG && echo "event: read_max; temp: $current_max_temp" >&2
-    $DEBUG && echo "event: adjust; speed: $new_fan_speed" >&2
+    $DEBUG && echo -n "Temp: $(($current_max_temp / 1000))C, " >&2
+    $DEBUG && echo "Fan speed: $(($new_fan_speed * 100 / 255))%" >&2
     echo $new_fan_speed > $FAN_SPEED_FILE
     prev_fan_speed=$new_fan_speed
   fi
