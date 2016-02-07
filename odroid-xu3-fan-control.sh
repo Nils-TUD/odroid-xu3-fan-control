@@ -5,7 +5,7 @@
 #
 # See README.md for details.
 
-#set to false to suppress logs
+# Set to false to suppress logs
 DEBUG=true
 
 # Make sure only root can run our script
@@ -29,7 +29,7 @@ FAN_MODE_FILE="/sys/devices/odroid_fan.$FAN/fan_mode"
 FAN_SPEED_FILE="/sys/devices/odroid_fan.$FAN/pwm_duty"
 TEST_EVERY=3 #seconds
 
-#make sure after quiting script fan goes to auto control
+# Make sure after quiting script fan goes to auto control
 function cleanup {
   ${DEBUG} && echo "event: quit; temp: auto" >&2
   echo 1 > ${FAN_MODE_FILE}
@@ -53,7 +53,8 @@ current_max_temp=`cat ${TEMPERATURE_FILE} | cut -d: -f2 | sort -nr | head -1`
 echo "fan control started. Current max temp: ${current_max_temp}"
 
 prev_fan_speed=0
-echo 0 > ${FAN_MODE_FILE} #to be sure we can manage fan
+# To be sure we can manage fan
+echo 0 > ${FAN_MODE_FILE}
 
 prev_temp=0
 while [ true ];
