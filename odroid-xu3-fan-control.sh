@@ -6,7 +6,7 @@
 # See README.md for details.
 
 #set to false to suppress logs
-DEBUG=false
+DEBUG=true
 
 # Make sure only root can run our script
 if (( $EUID != 0 )); then
@@ -28,17 +28,16 @@ TEMPERATURE_FILE="/sys/devices/10060000.tmu/temp"
 FAN_MODE_FILE="/sys/devices/odroid_fan.$FAN/fan_mode"
 FAN_SPEED_FILE="/sys/devices/odroid_fan.$FAN/pwm_duty"
 TEST_EVERY=3 #seconds
-LOGGER_NAME=odroid-xu3-fan-control
 
 #make sure after quiting script fan goes to auto control
 function cleanup {
-  ${DEBUG} && logger -t $LOGGER_NAME "event: quit; temp: auto"
+  ${DEBUG} && echo "event: quit; temp: auto" >&2
   echo 1 > ${FAN_MODE_FILE}
 }
 trap cleanup EXIT
 
 function exit_xu3_only_supported {
-  ${DEBUG} && logger -t $LOGGER_NAME "event: non-xu3 $1"
+  ${DEBUG} && echo "event: non-xu3 $1" >&2
   exit 2
 }
 if [ ! -f $TEMPERATURE_FILE ]; then
@@ -52,8 +51,6 @@ fi
 
 current_max_temp=`cat ${TEMPERATURE_FILE} | cut -d: -f2 | sort -nr | head -1`
 echo "fan control started. Current max temp: ${current_max_temp}"
-echo "For more logs see:"
-echo "sudo tail -f /var/log/syslog"
 
 prev_fan_speed=0
 echo 0 > ${FAN_MODE_FILE} #to be sure we can manage fan
@@ -62,7 +59,6 @@ while [ true ];
 do
 
   current_max_temp=`cat ${TEMPERATURE_FILE} | cut -d: -f2 | sort -nr | head -1`
-  ${DEBUG} && logger -t $LOGGER_NAME "event: read_max; temp: ${current_max_temp}"
 
   new_fan_speed=0
   if (( ${current_max_temp} >= 75000 )); then
@@ -86,7 +82,8 @@ do
   fi
 
   if (( ${prev_fan_speed} != ${new_fan_speed} )); then
-    ${DEBUG} && logger -t $LOGGER_NAME "event: adjust; speed: ${new_fan_speed}"
+    ${DEBUG} && echo "event: read_max; temp: ${current_max_temp}" >&2
+    ${DEBUG} && echo "event: adjust; speed: ${new_fan_speed}" >&2
     echo ${new_fan_speed} > ${FAN_SPEED_FILE}
     prev_fan_speed=${new_fan_speed}
   fi
