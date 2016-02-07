@@ -1,0 +1,5 @@
+[Unit]
+Description=Controls the fan speed
+
+[Service]
+ExecStart=/bin/bash /etc/systemd/system/odroid-xu3-fan-control.sh
