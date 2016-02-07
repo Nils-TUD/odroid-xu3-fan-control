@@ -55,10 +55,17 @@ echo "fan control started. Current max temp: ${current_max_temp}"
 prev_fan_speed=0
 echo 0 > ${FAN_MODE_FILE} #to be sure we can manage fan
 
+prev_temp=0
 while [ true ];
 do
 
   current_max_temp=`cat ${TEMPERATURE_FILE} | cut -d: -f2 | sort -nr | head -1`
+  if [ $current_max_temp -eq $prev_temp ]; then
+    sleep ${TEST_EVERY}
+    continue
+  fi
+
+  prev_temp=$current_max_temp
 
   new_fan_speed=0
   if (( ${current_max_temp} >= 75000 )); then
